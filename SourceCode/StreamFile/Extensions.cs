@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace StreamFile
 {
@@ -17,9 +18,47 @@ namespace StreamFile
             return source.IndexOf(toCheck, comparison) >= 0;
         }
 
-        public static bool EqualsIgnoreCase(this string source, string toCheck, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+        /// <summary>
+        /// Convert Hash bytes to Hexadecimal String format 
+        /// </summary>
+        public static bool EqualsIgnoreCase(this string input, string other, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
         {
-            return source.Equals(toCheck, comparison);
+            return input.Equals(other, comparison);
+        }
+
+        /// <summary>
+        /// Remove non-alphanumeric characters from a string (and optionally whitespace as well)
+        /// </summary>
+        public static string ToAlphanumeric(this string input, bool allowWhiteSpace = false)
+        {
+            if (allowWhiteSpace)
+                return new string(Array.FindAll(input.ToCharArray(), (c => (char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)))));
+
+            return new string(Array.FindAll(input.ToCharArray(), (c => (char.IsLetterOrDigit(c)))));
+        }
+
+        /// <summary>
+        /// Convert Hash bytes to Hexadecimal String format. Defaults to UTF8 Encoding.
+        /// </summary>
+        public static byte[] ToBytes(this string input, Encoding encoding = null)
+        {
+            encoding = encoding ?? new UTF8Encoding();
+            return encoding.GetBytes(input);
+        }
+
+        /// <summary>
+        /// Convert a byte array to Hexadecimal String format 
+        /// </summary>
+        public static string GetString(this byte[] bytes, bool uppercase = true)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (byte b in bytes)
+            {
+                sb.Append(b.ToString("x2"));
+            }
+
+            return uppercase ? sb.ToString().ToUpper() : sb.ToString();
         }
 
         public static int ToInt(this string s, int defaultValue = -1)
