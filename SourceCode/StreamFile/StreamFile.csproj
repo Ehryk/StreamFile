@@ -54,6 +54,33 @@
     <None Include="App.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="PostBuildMacros">
+    <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
+      <Output TaskParameter="Assemblies" ItemName="Targets" />
+    </GetAssemblyIdentity>
+    <PropertyGroup>
+      <Version>@(Targets->'%(Version)')</Version>
+    </PropertyGroup>
+    <ItemGroup>
+      <Version Include="$(Version)" />
+      <Major Include="$(Version.Split('.')[0])" />
+      <Minor Include="$(Version.Split('.')[1])" />
+      <Build Include="$(Version.Split('.')[2])" />
+      <Revision Include="$(Version.Split('.')[3])" />
+    </ItemGroup>
+    <Message Text="Version: @(Version)" />
+    <Message Text="Major.Minor.Build.Revision: @(Major).@(Minor).@(Build).@(Revision)" />
+  </Target>
+  <PropertyGroup>
+    <PostBuildEventDependsOn>
+      $(PostBuildEventDependsOn);
+      PostBuildMacros;
+    </PostBuildEventDependsOn>
+    <PostBuildEvent>
+      copy /y $(TargetPath) $(SolutionDir)..\Builds\$(TargetName)$(TargetExt)
+      if $(ConfigurationName) == Release copy /y $(TargetPath) $(SolutionDir)..\Builds\$(TargetName)_v@(Major).@(Minor)$(TargetExt)
+    </PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
