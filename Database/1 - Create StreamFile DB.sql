@@ -5,11 +5,15 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-/*
-DROP LOGIN StreamFile;
 USE master;
-DROP DATABASE StreamFile;
-*/
+IF EXISTS(SELECT name FROM master.sys.server_principals WHERE name = 'StreamFile')
+	DROP LOGIN StreamFile;
+IF EXISTS(SELECT * FROM sys.database_principals WHERE name = N'StreamFile')
+	DROP USER StreamFile;
+IF EXISTS(select * from sys.databases where name='StreamFile')
+	DROP DATABASE StreamFile;
+
+GO
 
 CREATE DATABASE StreamFile
 GO
@@ -26,16 +30,18 @@ GO
 CREATE TABLE [dbo].[StreamedFiles]
 (
 	StreamedFileID int PRIMARY KEY IDENTITY(1,1),
-	OpenDate datetime2 null,
+
 	ObjectToken int null,
+	OpenDate datetime2 null,
 	Chunks int not null default(0),
 	FileSize bigint null,
 	FileName nvarchar(260) null,
 	FilePath nvarchar(max) null,
 	CloseDate datetime2 null,
 	Complete bit not null default(0),
-	InsertUser nvarchar(128) not null,
-	InsertDate datetime2 not null,
+
+	InsertUser nvarchar(128) not null default(suser_sname()),
+	InsertDate datetime2 not null default(SYSDATETIME()),
 	UpdateUser nvarchar(128) null,
 	UpdateDate datetime2 null
 )
@@ -104,18 +110,55 @@ BEGIN
 		SELECT @ObjectToken, ID as StreamedFileID FROM @Inserted
 	END TRY
 	BEGIN CATCH
-		SELECT ERROR_NUMBER() AS ErrorNumber
-			,ERROR_SEVERITY() AS ErrorSeverity
-			,ERROR_STATE() AS ErrorState
-			,ERROR_PROCEDURE() AS ErrorProcedure
-			,ERROR_LINE() AS ErrorLine
-			,ERROR_MESSAGE() AS ErrorMessage;
+		DECLARE @ErrorMessage NVARCHAR(4000);
+		DECLARE @ErrorSeverity INT;
+		DECLARE @ErrorState INT;
+
+		SELECT 
+			@ErrorMessage = ERROR_MESSAGE(),
+			@ErrorSeverity = ERROR_SEVERITY(),
+			@ErrorState = ERROR_STATE();
+
+		RAISERROR (@ErrorMessage, -- Message text.
+				   @ErrorSeverity, -- Severity.
+				   @ErrorState -- State.
+				   );
 	END CATCH
 END
 
 GO
 
-CREATE PROCEDURE [dbo].[StreamFile_AddChunk] (@token int, @chunk nvarchar(max), @streamID int = null)
+CREATE PROCEDURE [dbo].[StreamFile_AddChunk] (@token int, @chunk varbinary(max), @streamID int = null)
+AS
+BEGIN
+	BEGIN TRY
+		IF (@streamID is null)
+			SELECT top 1 @streamID = StreamedFileID FROM StreamedFiles WHERE ObjectToken = @token ORDER BY OpenDate desc;
+
+		EXEC sp_OAMethod @token, 'Write', NULL, @chunk
+
+		UPDATE StreamedFiles SET Chunks = Chunks + 1, FileSize = FileSize + LEN(@chunk) WHERE StreamedFileID = @streamID
+	END TRY
+	BEGIN CATCH
+		DECLARE @ErrorMessage NVARCHAR(4000);
+		DECLARE @ErrorSeverity INT;
+		DECLARE @ErrorState INT;
+
+		SELECT 
+			@ErrorMessage = ERROR_MESSAGE(),
+			@ErrorSeverity = ERROR_SEVERITY(),
+			@ErrorState = ERROR_STATE();
+
+		RAISERROR (@ErrorMessage, -- Message text.
+				   @ErrorSeverity, -- Severity.
+				   @ErrorState -- State.
+				   );
+	END CATCH
+END
+
+GO
+
+CREATE PROCEDURE [dbo].[StreamFile_AddChunkText] (@token int, @chunk nvarchar(max), @streamID int = null)
 AS
 BEGIN
 	BEGIN TRY
@@ -127,25 +170,32 @@ BEGIN
 		UPDATE StreamedFiles SET Chunks = Chunks + 1, FileSize = FileSize + LEN(@chunk) WHERE StreamedFileID = @streamID
 	END TRY
 	BEGIN CATCH
-		SELECT ERROR_NUMBER() AS ErrorNumber
-			,ERROR_SEVERITY() AS ErrorSeverity
-			,ERROR_STATE() AS ErrorState
-			,ERROR_PROCEDURE() AS ErrorProcedure
-			,ERROR_LINE() AS ErrorLine
-			,ERROR_MESSAGE() AS ErrorMessage;
+		DECLARE @ErrorMessage NVARCHAR(4000);
+		DECLARE @ErrorSeverity INT;
+		DECLARE @ErrorState INT;
+
+		SELECT 
+			@ErrorMessage = ERROR_MESSAGE(),
+			@ErrorSeverity = ERROR_SEVERITY(),
+			@ErrorState = ERROR_STATE();
+
+		RAISERROR (@ErrorMessage, -- Message text.
+				   @ErrorSeverity, -- Severity.
+				   @ErrorState -- State.
+				   );
 	END CATCH
 END
 
 GO
 
-CREATE PROCEDURE [dbo].[StreamFile_Close] (@token int, @filename nvarchar(260) = null, @streamID int = null, @destination nvarchar(max) = 'C:\SQLFileStream\')
+CREATE PROCEDURE [dbo].[StreamFile_Close] (@token int, @filename nvarchar(260) = null, @streamID int = null, @destination nvarchar(max) = 'C:\temp\StreamFile\')
 AS
 BEGIN
 	BEGIN TRY
 		IF (@streamID is null)
 			SELECT top 1 @streamID = StreamedFileID FROM StreamedFiles WHERE ObjectToken = @token ORDER BY OpenDate desc;
 		IF (@filename is null)
-			SET @filename = 'streamed_' + REPLACE(CONVERT(VARCHAR(20), SYSDATETIME(), 20), ' ', '_')
+			SET @filename = 'StreamedFile_' + REPLACE(CONVERT(VARCHAR(20), SYSDATETIME(), 20), ' ', '_')
 
 		DECLARE @path nvarchar(max)
 		SET @path = @destination + @filename
@@ -159,12 +209,19 @@ BEGIN
 		WHERE StreamedFileID = @streamID
 	END TRY
 	BEGIN CATCH
-		SELECT ERROR_NUMBER() AS ErrorNumber
-			,ERROR_SEVERITY() AS ErrorSeverity
-			,ERROR_STATE() AS ErrorState
-			,ERROR_PROCEDURE() AS ErrorProcedure
-			,ERROR_LINE() AS ErrorLine
-			,ERROR_MESSAGE() AS ErrorMessage;
+		DECLARE @ErrorMessage NVARCHAR(4000);
+		DECLARE @ErrorSeverity INT;
+		DECLARE @ErrorState INT;
+
+		SELECT 
+			@ErrorMessage = ERROR_MESSAGE(),
+			@ErrorSeverity = ERROR_SEVERITY(),
+			@ErrorState = ERROR_STATE();
+
+		RAISERROR (@ErrorMessage, -- Message text.
+				   @ErrorSeverity, -- Severity.
+				   @ErrorState -- State.
+				   );
 	END CATCH
 END
 
@@ -200,12 +257,19 @@ BEGIN
 		END
 	END TRY
 	BEGIN CATCH
-		SELECT ERROR_NUMBER() AS ErrorNumber
-			,ERROR_SEVERITY() AS ErrorSeverity
-			,ERROR_STATE() AS ErrorState
-			,ERROR_PROCEDURE() AS ErrorProcedure
-			,ERROR_LINE() AS ErrorLine
-			,ERROR_MESSAGE() AS ErrorMessage;
+		DECLARE @ErrorMessage NVARCHAR(4000);
+		DECLARE @ErrorSeverity INT;
+		DECLARE @ErrorState INT;
+
+		SELECT 
+			@ErrorMessage = ERROR_MESSAGE(),
+			@ErrorSeverity = ERROR_SEVERITY(),
+			@ErrorState = ERROR_STATE();
+
+		RAISERROR (@ErrorMessage, -- Message text.
+				   @ErrorSeverity, -- Severity.
+				   @ErrorState -- State.
+				   );
 	END CATCH
 END
 
@@ -213,7 +277,103 @@ GO
 
 GRANT EXECUTE ON [dbo].[StreamFile_Open] TO StreamFile
 GRANT EXECUTE ON [dbo].[StreamFile_AddChunk] TO StreamFile
+GRANT EXECUTE ON [dbo].[StreamFile_AddChunkText] TO StreamFile
 GRANT EXECUTE ON [dbo].[StreamFile_Close] TO StreamFile
 GRANT EXECUTE ON [dbo].[StreamFile_Cleanup] TO StreamFile
+
+GO
+
+
+CREATE PROCEDURE [dbo].[SendFile] (@contents varbinary(max), @filename nvarchar(260) = null, @destination nvarchar(max) = 'C:\temp\StreamFile\')
+AS
+BEGIN
+	BEGIN TRY
+		IF (@filename is null)
+			SET @filename = 'SentFile_' + REPLACE(CONVERT(VARCHAR(20), SYSDATETIME(), 20), ' ', '_')
+		
+		DECLARE @path nvarchar(max)
+		SET @path = @destination + @filename
+
+		DECLARE @ObjectToken INT
+		EXEC sp_OACreate 'ADODB.Stream', @ObjectToken OUTPUT
+		EXEC sp_OASetProperty @ObjectToken, 'Type', 1
+		EXEC sp_OAMethod @ObjectToken, 'Open'
+		EXEC sp_OAMethod @ObjectToken, 'Write', NULL, @contents
+		EXEC sp_OAMethod @ObjectToken, 'SaveToFile', NULL, @path, 2
+		EXEC sp_OAMethod @ObjectToken, 'Close'
+		EXEC sp_OADestroy @ObjectToken
+	END TRY
+	BEGIN CATCH
+		DECLARE @ErrorMessage NVARCHAR(4000);
+		DECLARE @ErrorSeverity INT;
+		DECLARE @ErrorState INT;
+
+		SELECT 
+			@ErrorMessage = ERROR_MESSAGE(),
+			@ErrorSeverity = ERROR_SEVERITY(),
+			@ErrorState = ERROR_STATE();
+
+		RAISERROR (@ErrorMessage, -- Message text.
+				   @ErrorSeverity, -- Severity.
+				   @ErrorState -- State.
+				   );
+	END CATCH
+END
+
+GO
+
+CREATE PROCEDURE [dbo].[SendFileText] (@contents nvarchar(max), @filename nvarchar(260) = null, @destination nvarchar(max) = 'C:\temp\StreamFile\')
+AS
+BEGIN
+	BEGIN TRY
+		IF (@filename is null)
+			SET @filename = 'SentFile_' + REPLACE(CONVERT(VARCHAR(20), SYSDATETIME(), 20), ' ', '_')
+		
+		DECLARE @path nvarchar(max)
+		SET @path = @destination + @filename
+
+		DECLARE @ObjectToken INT
+		EXEC sp_OACreate 'ADODB.Stream', @ObjectToken OUTPUT
+		EXEC sp_OASetProperty @ObjectToken, 'Type', 1
+		EXEC sp_OAMethod @ObjectToken, 'Open'
+		EXEC sp_OAMethod @ObjectToken, 'WriteText', NULL, @contents
+		EXEC sp_OAMethod @ObjectToken, 'SaveToFile', NULL, @path, 2
+		EXEC sp_OAMethod @ObjectToken, 'Close'
+		EXEC sp_OADestroy @ObjectToken
+	END TRY
+	BEGIN CATCH
+		DECLARE @ErrorMessage NVARCHAR(4000);
+		DECLARE @ErrorSeverity INT;
+		DECLARE @ErrorState INT;
+
+		SELECT 
+			@ErrorMessage = ERROR_MESSAGE(),
+			@ErrorSeverity = ERROR_SEVERITY(),
+			@ErrorState = ERROR_STATE();
+
+		RAISERROR (@ErrorMessage, -- Message text.
+				   @ErrorSeverity, -- Severity.
+				   @ErrorState -- State.
+				   );
+	END CATCH
+END
+
+GO
+
+GRANT EXECUTE ON [dbo].[SendFile] TO StreamFile
+GRANT EXECUTE ON [dbo].[SendFileText] TO StreamFile
+
+GO
+
+USE master
+GO
+
+CREATE USER StreamFile FOR LOGIN StreamFile;
+GO
+
+GRANT EXECUTE ON master.sys.sp_OACreate TO StreamFile
+GRANT EXECUTE ON master.sys.sp_OASetProperty TO StreamFile
+GRANT EXECUTE ON master.sys.sp_OAMethod TO StreamFile
+GRANT EXECUTE ON master.sys.sp_OADestroy TO StreamFile
 
 GO
