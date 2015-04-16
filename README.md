@@ -1,5 +1,5 @@
-StreamFile v1.3
-================
+StreamFile v1.4
+===============
 
 This repository contains various ways to save or stream a file to a SQL Server instance through stored procedures. Non streamed versions load the entire file into memory and pass it in a single block, however this has memory consequences and is vulnerable to large files. Streamed versions break the file(s) into smaller units for transferring and lead to much lower memory demands.
 
