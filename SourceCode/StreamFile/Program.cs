@@ -5,19 +5,21 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
-using System.Text;
 
 namespace StreamFile
 {
     public class Program
     {
-        public static bool LeaveOpen = true;
-
         static void Main(string[] args)
         {
             var timer = new Stopwatch();
             try
             {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine(" === {0} v{1}.{2} === ", ApplicationInfo.Title, ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor, ApplicationInfo.Version.Build, ApplicationInfo.Version.Revision, ApplicationInfo.CopyrightHolder);
+                Console.WriteLine();
+                Console.ResetColor();
+
                 if (args.Length >= 1)
                 {
                     timer.Start();
@@ -26,33 +28,38 @@ namespace StreamFile
                     if (!File.Exists(path))
                         throw new FileNotFoundException(String.Format("File not found: {0}", path));
                     string fileName = Path.GetFileName(path);
-                    int buffer = 1024;
+                    int buffer = AppSettings.DefaultBufferSize;
                     if (args.Length > 2)
                         buffer = int.Parse(args[1]);
+
+                    Console.Write("Streaming {0} in chunks of {1} bytes... ", fileName, buffer);
 
                     long length = 0;
                     using (FileStream fs = File.OpenRead(path))
                     {
                         int read = 1;
+                        int chunks = 0;
                         length = fs.Length;
                         long remaining = length;
                         byte[] chunk = new byte[buffer];
-                        
-                        StreamFile sf = DataAccess.Create(fileName);
+
+                        StreamFile sf = DataAccess.Start(fileName);
 
                         while (length > 0 && read > 0)
                         {
                             read = fs.Read(chunk, 0, (int)Math.Min(length, buffer));
-                            DataAccess.AddChunk(sf.StreamFileID, Encoding.Unicode.GetString(chunk));
+                            DataAccess.AddBytes(sf.StreamFileID, chunk);
                             remaining -= read;
+                            chunks++;
                         }
 
-                        DataAccess.Close(sf.StreamFileID);
+                        DataAccess.End(sf.StreamFileID);
+                        Console.WriteLine("Done ({0} chunks).", chunks);
                     }
 
                     timer.Stop();
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine("Transferred {0} ({1:N3} MB) in {2}m{3}.{4:N1}s", fileName, length, timer.Elapsed.TotalMinutes, timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine("Transferred {0} ({1:N3} MB) in {2}m {3}.{4}s", fileName, length/1024.0/1024.0, Math.Floor(timer.Elapsed.TotalMinutes), timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
                 }
                 else
                 {
@@ -69,7 +76,7 @@ namespace StreamFile
             {
             }
 
-            if (LeaveOpen)
+            if (AppSettings.LeaveConsoleOpen)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine();

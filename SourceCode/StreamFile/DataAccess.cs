@@ -44,9 +44,9 @@ namespace StreamFile
 
         #region Streaming Methods
 
-        public static StreamFile Create(string filename = null, bool? overwrite = true, string destination = null)
+        public static StreamFile Start(string filename = null, bool? overwrite = true, string destination = null)
         {
-            var cmd = new SqlCommand("StreamFile_Create", Connection);
+            var cmd = new SqlCommand(AppSettings.SP_StreamFile_Start, Connection);
             cmd.CommandType = CommandType.StoredProcedure;
             if (filename != null)
                 cmd.Parameters.AddWithValue("@filename", filename);
@@ -64,9 +64,9 @@ namespace StreamFile
             return null;
         }
 
-        public static StreamFile AddChunk(int fileID, byte[] chunk)
+        public static StreamFile AddBytes(int fileID, byte[] chunk)
         {
-            var cmd = new SqlCommand("StreamFile_AddChunk", Connection);
+            var cmd = new SqlCommand(AppSettings.SP_StreamFile_AddBytes, Connection);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@fileID", fileID);
             cmd.Parameters.AddWithValue("@chunk", chunk);
@@ -80,9 +80,9 @@ namespace StreamFile
             return null;
         }
 
-        public static StreamFile AddChunk(int fileID, string chunk)
+        public static StreamFile AddText(int fileID, string chunk)
         {
-            var cmd = new SqlCommand("StreamFile_AddChunk", Connection);
+            var cmd = new SqlCommand(AppSettings.SP_StreamFile_AddText, Connection);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@fileID", fileID);
             cmd.Parameters.AddWithValue("@chunk", chunk);
@@ -96,9 +96,9 @@ namespace StreamFile
             return null;
         }
 
-        public static StreamFile Close(int fileID)
+        public static StreamFile End(int fileID)
         {
-            var cmd = new SqlCommand("StreamFile_Close", Connection);
+            var cmd = new SqlCommand(AppSettings.SP_StreamFile_End, Connection);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@fileID", fileID);
 
@@ -117,7 +117,7 @@ namespace StreamFile
 
         public static bool Send(string contents, string filename = null, string destination = null)
         {
-            var cmd = new SqlCommand("SendFileText", Connection);
+            var cmd = new SqlCommand(AppSettings.SP_SaveFileText, Connection);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@contents", contents);
             if (filename != null)
@@ -130,7 +130,7 @@ namespace StreamFile
 
         public static bool Send(byte[] contents, string filename = null, string destination = null)
         {
-            var cmd = new SqlCommand("SendFile", Connection);
+            var cmd = new SqlCommand(AppSettings.SP_SaveFileBytes, Connection);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@contents", contents);
             if (filename != null)
