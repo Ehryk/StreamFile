@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.SqlClient;
 
 namespace StreamFile
 {
@@ -10,7 +11,6 @@ namespace StreamFile
     {
         public int StreamFileID { get; set; }
 
-        public int ObjectToken { get; set; }
         public DateTime? OpenDate { get; set; }
         public int Chunks { get; set; }
         public long FileSize { get; set; }
@@ -24,10 +24,21 @@ namespace StreamFile
         public string UpdateUser { get; set; }
         public DateTime? UpdateDate { get; set; }
 
-        public StreamFile(int token, int streamID = -1)
+        public StreamFile(int fileID = -1)
         {
-            StreamFileID = streamID;
-            ObjectToken = token;
+            StreamFileID = fileID;
+        }
+
+        public StreamFile(SqlDataReader reader)
+        {
+            StreamFileID = reader[0].ToInt();
+            OpenDate = reader[1].ToNullableDateTime();
+            Chunks = reader[2].ToInt();
+            FileSize = reader[3].ToLong();
+            FileName = reader[4].ToString();
+            FilePath = reader[5].ToString();
+            CloseDate = reader[6].ToNullableDateTime();
+            Complete = reader[7].ToBoolean();
         }
     }
 }

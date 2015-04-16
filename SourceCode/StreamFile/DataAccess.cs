@@ -44,59 +44,71 @@ namespace StreamFile
 
         #region Streaming Methods
 
-        public static StreamFile Open()
+        public static StreamFile Create(string filename = null, bool? overwrite = true, string destination = null)
         {
-            var cmd = new SqlCommand("StreamFile_Open", Connection);
+            var cmd = new SqlCommand("StreamFile_Create", Connection);
             cmd.CommandType = CommandType.StoredProcedure;
+            if (filename != null)
+                cmd.Parameters.AddWithValue("@filename", filename);
+            if (overwrite != null)
+                cmd.Parameters.AddWithValue("@overwrite", overwrite);
+            if (destination != null)
+                cmd.Parameters.AddWithValue("@destination", destination);
 
             using (var reader = cmd.ExecuteReader())
             {
                 if (reader.Read())
-                    return new StreamFile(reader.GetInt32(0), reader.GetInt32(1));
+                    return new StreamFile(reader);
             }
 
             return null;
         }
 
-        public static bool AddChunk(int token, byte[] chunk, int? streamID = null)
+        public static StreamFile AddChunk(int fileID, byte[] chunk)
         {
             var cmd = new SqlCommand("StreamFile_AddChunk", Connection);
             cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@token", token);
+            cmd.Parameters.AddWithValue("@fileID", fileID);
             cmd.Parameters.AddWithValue("@chunk", chunk);
-            if (streamID != null)
-                cmd.Parameters.AddWithValue("@streamID", streamID);
 
-            int rows = cmd.ExecuteNonQuery();
-            return rows == 1;
+            using (var reader = cmd.ExecuteReader())
+            {
+                if (reader.Read())
+                    return new StreamFile(reader);
+            }
+
+            return null;
         }
 
-        public static bool AddChunk(int token, string chunk, int? streamID = null)
+        public static StreamFile AddChunk(int fileID, string chunk)
         {
-            var cmd = new SqlCommand("StreamFile_AddChunkText", Connection);
+            var cmd = new SqlCommand("StreamFile_AddChunk", Connection);
             cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@token", token);
+            cmd.Parameters.AddWithValue("@fileID", fileID);
             cmd.Parameters.AddWithValue("@chunk", chunk);
-            if (streamID != null)
-                cmd.Parameters.AddWithValue("@streamID", streamID);
 
-            int rows = cmd.ExecuteNonQuery();
-            return rows == 1;
+            using (var reader = cmd.ExecuteReader())
+            {
+                if (reader.Read())
+                    return new StreamFile(reader);
+            }
+
+            return null;
         }
 
-        public static bool Close(int token, string filename = null, int? streamID = null, string destination = null)
+        public static StreamFile Close(int fileID)
         {
             var cmd = new SqlCommand("StreamFile_Close", Connection);
             cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@token", token);
-            cmd.Parameters.AddWithValue("@filename", filename);
-            if (streamID != null)
-                cmd.Parameters.AddWithValue("@streamID", streamID);
-            if (destination != null)
-                cmd.Parameters.AddWithValue("@destination", destination);
+            cmd.Parameters.AddWithValue("@fileID", fileID);
 
-            int rows = cmd.ExecuteNonQuery();
-            return rows == 1;
+            using (var reader = cmd.ExecuteReader())
+            {
+                if (reader.Read())
+                    return new StreamFile(reader);
+            }
+
+            return null;
         }
 
         #endregion
