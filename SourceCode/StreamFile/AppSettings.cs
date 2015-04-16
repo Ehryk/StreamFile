@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Configuration;
+﻿using System.Configuration;
 
 namespace StreamFile
 {
@@ -11,17 +6,17 @@ namespace StreamFile
     {
         #region Private Properties (loaded from App.config)
 
-        private static string leaveConsoleOpen = ConfigurationManager.AppSettings["LeaveConsoleOpen"];
-        private static string defaultBufferSize = ConfigurationManager.AppSettings["DefaultBufferSize"];
+        private static readonly string leaveConsoleOpen = ConfigurationManager.AppSettings["LeaveConsoleOpen"];
+        private static readonly string defaultBufferSize = ConfigurationManager.AppSettings["DefaultBufferSize"];
 
-        private static string sp_StreamFile_Start = ConfigurationManager.AppSettings["SP_StreamFile_Start"];
-        private static string sp_StreamFile_AddText = ConfigurationManager.AppSettings["SP_StreamFile_AddText"];
-        private static string sp_StreamFile_AddBytes = ConfigurationManager.AppSettings["SP_StreamFile_AddBytes"];
-        private static string sp_StreamFile_End = ConfigurationManager.AppSettings["SP_StreamFile_End"];
-        private static string sp_StreamFile_Cleanup = ConfigurationManager.AppSettings["SP_StreamFile_Cleanup"];
+        private static readonly string sp_StreamFile_Start = ConfigurationManager.AppSettings["SP_StreamFile_Start"];
+        private static readonly string sp_StreamFile_AddText = ConfigurationManager.AppSettings["SP_StreamFile_AddText"];
+        private static readonly string sp_StreamFile_AddBytes = ConfigurationManager.AppSettings["SP_StreamFile_AddBytes"];
+        private static readonly string sp_StreamFile_End = ConfigurationManager.AppSettings["SP_StreamFile_End"];
+        private static readonly string sp_StreamFile_Cleanup = ConfigurationManager.AppSettings["SP_StreamFile_Cleanup"];
 
-        private static string sp_SaveFileText = ConfigurationManager.AppSettings["SP_SaveFileText"];
-        private static string sp_SaveFileBytes = ConfigurationManager.AppSettings["SP_SaveFileBytes"];
+        private static readonly string sp_SaveFile_Text = ConfigurationManager.AppSettings["SP_SaveFileText"];
+        private static readonly string sp_SaveFile_Bytes = ConfigurationManager.AppSettings["SP_SaveFileBytes"];
 
         #endregion
 
@@ -36,8 +31,8 @@ namespace StreamFile
         public static string SP_StreamFile_End { get { return sp_StreamFile_End ?? "StreamFile_End"; } }
         public static string SP_StreamFile_Cleanup { get { return sp_StreamFile_Cleanup ?? "StreamFile_Cleanup"; } }
 
-        public static string SP_SaveFileText { get { return sp_SaveFileText ?? "SaveFile_Text"; } }
-        public static string SP_SaveFileBytes { get { return sp_SaveFileBytes ?? "SaveFile_Bytes"; } }
+        public static string SP_SaveFile_Text { get { return sp_SaveFile_Text ?? "SaveFile_Text"; } }
+        public static string SP_SaveFile_Bytes { get { return sp_SaveFile_Bytes ?? "SaveFile_Bytes"; } }
 
         #endregion
     }

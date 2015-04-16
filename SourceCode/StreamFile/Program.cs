@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
 
@@ -16,7 +12,7 @@ namespace StreamFile
             try
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine(" === {0} v{1}.{2} === ", ApplicationInfo.Title, ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor, ApplicationInfo.Version.Build, ApplicationInfo.Version.Revision, ApplicationInfo.CopyrightHolder);
+                Console.WriteLine(" === {0} v{1}.{2} === ", ApplicationInfo.Title, ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor);
                 Console.WriteLine();
                 Console.ResetColor();
 
@@ -34,7 +30,7 @@ namespace StreamFile
 
                     Console.Write("Streaming {0} in chunks of {1} bytes... ", fileName, buffer);
 
-                    long length = 0;
+                    long length;
                     using (FileStream fs = File.OpenRead(path))
                     {
                         int read = 1;
@@ -45,7 +41,7 @@ namespace StreamFile
 
                         StreamFile sf = DataAccess.Start(fileName);
 
-                        while (length > 0 && read > 0)
+                        while (remaining > 0 && read > 0)
                         {
                             read = fs.Read(chunk, 0, (int)Math.Min(length, buffer));
                             DataAccess.AddBytes(sf.StreamFileID, chunk);
@@ -71,9 +67,6 @@ namespace StreamFile
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Error: {0}", ex.Message);
-            }
-            finally
-            {
             }
 
             if (AppSettings.LeaveConsoleOpen)

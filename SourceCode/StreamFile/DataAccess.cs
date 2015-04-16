@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Configuration;
+﻿using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -20,9 +15,10 @@ namespace StreamFile
         {
             get
             {
-                if (connection != null && connection.State == System.Data.ConnectionState.Open)
+                if (connection != null && connection.State == ConnectionState.Open)
                     return connection;
-                else if (connection != null)
+                
+                if (connection != null)
                     connection.Dispose();
 
                 connection = new SqlConnection(ConnectionString);
@@ -117,7 +113,7 @@ namespace StreamFile
 
         public static bool Send(string contents, string filename = null, string destination = null)
         {
-            var cmd = new SqlCommand(AppSettings.SP_SaveFileText, Connection);
+            var cmd = new SqlCommand(AppSettings.SP_SaveFile_Text, Connection);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@contents", contents);
             if (filename != null)
@@ -130,7 +126,7 @@ namespace StreamFile
 
         public static bool Send(byte[] contents, string filename = null, string destination = null)
         {
-            var cmd = new SqlCommand(AppSettings.SP_SaveFileBytes, Connection);
+            var cmd = new SqlCommand(AppSettings.SP_SaveFile_Bytes, Connection);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@contents", contents);
             if (filename != null)
