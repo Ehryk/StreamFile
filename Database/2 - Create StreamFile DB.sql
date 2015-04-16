@@ -91,9 +91,9 @@ BEGIN
 
 		EXEC dbo.CreateFile @tmppath
 		
-		INSERT INTO StreamedFiles (StartDate, FileName, FilePath)
+		INSERT INTO StreamedFiles (StartDate, FileSize, Chunks, FileName, FilePath)
 		OUTPUT inserted.StreamedFileID INTO @Inserted
-		VALUES (SYSDATETIME(), @filename, @tmppath)
+		VALUES (SYSDATETIME(), 0, 0, @filename, @tmppath)
 
 		SELECT * FROM StreamedFiles sf INNER JOIN @Inserted i on sf.StreamedFileID = i.StreamedFileID
 	END TRY
