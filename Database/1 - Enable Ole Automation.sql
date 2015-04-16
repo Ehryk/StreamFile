@@ -13,3 +13,10 @@ GO
 sp_configure 'Ole Automation Procedures', 1;
 GO
 RECONFIGURE;
+
+/*
+--Disable Ole Automation
+sp_configure 'Ole Automation Procedures', 0;
+GO
+RECONFIGURE;
+*/
