@@ -25,7 +25,7 @@ namespace StreamFile
 
         #endregion
 
-        #region Public Accessors
+        #region Public Accessors (with defaults)
 
         public static bool LeaveConsoleOpen { get { return leaveConsoleOpen.ToNullableBoolean() ?? false; } }
         public static int DefaultBufferSize { get { return defaultBufferSize.ToInt(4096); } }
@@ -36,8 +36,8 @@ namespace StreamFile
         public static string SP_StreamFile_End { get { return sp_StreamFile_End ?? "StreamFile_End"; } }
         public static string SP_StreamFile_Cleanup { get { return sp_StreamFile_Cleanup ?? "StreamFile_Cleanup"; } }
 
-        public static string SP_SaveFileText { get { return sp_SaveFileText ?? "SaveFileText"; } }
-        public static string SP_SaveFileBytes { get { return sp_SaveFileBytes ?? "SaveFileBytes"; } }
+        public static string SP_SaveFileText { get { return sp_SaveFileText ?? "SaveFile_Text"; } }
+        public static string SP_SaveFileBytes { get { return sp_SaveFileBytes ?? "SaveFile_Bytes"; } }
 
         #endregion
     }

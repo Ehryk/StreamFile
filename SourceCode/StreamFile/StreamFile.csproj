@@ -78,7 +78,9 @@
     </PostBuildEventDependsOn>
     <PostBuildEvent>
       copy /y $(TargetPath) $(SolutionDir)..\Builds\$(TargetName)$(TargetExt)
+      copy /y $(TargetPath).config $(SolutionDir)..\Builds\$(TargetName)$(TargetExt).config
       if $(ConfigurationName) == Release copy /y $(TargetPath) $(SolutionDir)..\Builds\$(TargetName)_v@(Major).@(Minor)$(TargetExt)
+      if $(ConfigurationName) == Release copy /y $(TargetPath).config $(SolutionDir)..\Builds\$(TargetName)_v@(Major).@(Minor)$(TargetExt).config
     </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
